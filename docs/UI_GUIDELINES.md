@@ -40,7 +40,7 @@ data via props (see [[ARCHITECTURE]] §3).
 - `InputSlider`: label + unit, a range control and a synced number field; both focusable; shows the clamped value.
 - `FuzzificationPanel`: table of term → degree (`0.00`–`1.00`) for rainfall and river level; zeros visible.
 - `FiredRulesTable`: rows of `IF rainfall AND river THEN risk — strength`; hidden rows when empty with a "No rules fired" note.
-- `AggregatedOutputChart`: Recharts curve of `aggregated` with a labelled vertical centroid line at `risk`; axes `0–100`.
+- `AggregatedOutputChart`: Recharts curve of `aggregated` with a labelled vertical centroid line at `risk`; axes `0–100`. The line marks the area-weighted `Centroid_v` (per-term areas), which is not necessarily the balance point of the drawn curve.
 - `MembershipFunctionsSection`: one small triangular plot per term per variable; shared axis labels.
 - `RiskResult`: large one-decimal index; advisory label with the matching risk color (text, not color alone).
 - `Mami`: mascot whose fill is the advisory color and whose caption is the advisory line.

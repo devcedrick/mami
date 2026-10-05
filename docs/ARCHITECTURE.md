@@ -62,11 +62,14 @@ The pure Mamdani engine and result contract.
 
 ```ts
 clamp(x, universe): number
-triangularMF(x, triplet): number
+triangularMF(x, triplet): number                       // Degree of Membership, 0–1
 fuzzify(x, variable): Record<string, number>
 evaluateRules(degrees, ruleSet): FiredRule[]
-aggregate(fired, output): AggregatedPoint[]
-defuzzify(points): number
+termStrengths(fired, output): Record<string, number>   // term -> μ_i = max rule strength
+termArea(lowval, midval, highval, mu): number          // a(2μ − μ²), a=(high−low)/2
+termCentroid(lowval, midval, highval): number          // == midval
+defuzzify(strengths, output): number                   // Centroid_v, 0 if ΣArea==0
+aggregate(fired, output): AggregatedPoint[]            // chart only
 inferFloodRisk(rainfallValue, riverLevelValue): FloodRiskResult
 ```
 
@@ -132,9 +135,11 @@ Mascot whose color/label follow `advisory`. Contract TBD — see [[TASKS]] T4.1.
 4. `clamp` bounds each input to its universe from `lib/flood-config.ts`.
 5. `fuzzify` + `triangularMF` produce term degrees for both inputs.
 6. `evaluateRules` applies `AND = min` across the 9 rules → `FiredRule[]`.
-7. `aggregate` clips/maxes output terms and samples `0–100` at `0.01` → `AggregatedPoint[]`.
-8. `defuzzify` computes the centroid (0 when `sum(mu) == 0`) → `risk`; advisory is looked up.
-9. `FloodRiskResult` is stored as derived state and passed to all panels.
+7. `termStrengths` collapses fired rules to one `μ_i` per output term (`max` across rules with that consequent).
+8. `termArea` + `termCentroid` compute each fired term's `Area_i = a_i(2μ_i − μ_i²)` and `Centroid_i = midval_i`.
+9. `defuzzify` returns `Centroid_v = Σ(midval_i · Area_i) / Σ(Area_i)` (0 when `ΣArea == 0`) → `risk`; `advisory` is looked up from `risk` (the advisory is the classification).
+10. Separately, `aggregate` builds the `0–100` chart set (clip/max, sample `0.01`) → `AggregatedPoint[]`.
+11. `FloodRiskResult` is stored as derived state and passed to all panels.
 
 Persists: nothing. Each render is derived from current inputs; reload resets to defaults.
 
@@ -149,7 +154,7 @@ Persists: nothing. Each render is derived from current inputs; reload resets to 
 - **Theming:** tokens defined once in `app/globals.css` (`@theme`); advisory colors map 1:1 to `advisories[].color`.
 - **Wiring-in-sync:** `app/page.tsx` is the single source of truth; every panel is fed from the same `FloodRiskResult` so they cannot drift.
 - **Routing:** single route `/`; sections are in-page anchors, not routes.
-- **Error policy:** degrade, never crash — clamp inputs, guard `sum(mu) == 0`, keep inputs editable, never emit NaN; no silent drops.
+- **Error policy:** degrade, never crash — clamp inputs, guard `Σ Area_i == 0`, keep inputs editable, never emit NaN; no silent drops.
 - **Formats:** units and thresholds are defined in [[DATA_MODEL]] §1 and enforced in `lib/flood-config.ts`.
 - **Verification:** `npm test`, `npm run lint`, `npm run build` must all pass (C-5).
 
@@ -161,9 +166,9 @@ Persists: nothing. Each render is derived from current inputs; reload resets to 
 | FR-1.3, FR-1.4 | `app/page.tsx` | `lib/fuzzy.ts` (`clamp`), `components/InputSlider.tsx` |
 | FR-2.1–FR-2.2 | `app/page.tsx` | `lib/fuzzy.ts`, `lib/flood-config.ts` |
 | FR-2.3 | `app/page.tsx` | `components/FuzzificationPanel.tsx` |
-| FR-3.1 | `app/page.tsx` | `lib/fuzzy.ts`, `lib/flood-config.ts` |
-| FR-3.2 | `app/page.tsx` | `components/FiredRulesTable.tsx` |
-| FR-4.1, FR-5.1 | `app/page.tsx` | `lib/fuzzy.ts` |
+| FR-3.1, FR-3.2 | `app/page.tsx` | `lib/fuzzy.ts`, `lib/flood-config.ts` |
+| FR-3.3 | `app/page.tsx` | `components/FiredRulesTable.tsx` |
+| FR-4.1, FR-5.1–FR-5.3 | `app/page.tsx` | `lib/fuzzy.ts` |
 | FR-6.1, FR-6.2 | `app/page.tsx` | `components/RiskResult.tsx`, `lib/flood-config.ts` |
 | FR-6.3 | `app/page.tsx` | `components/AggregatedOutputChart.tsx` |
 | FR-7.1 | `app/page.tsx` | `components/MembershipFunctionsSection.tsx` |

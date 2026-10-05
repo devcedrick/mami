@@ -9,6 +9,13 @@ Entries state **what** changed; `[ADR-XXXX]` references carry **why**.
 
 ## [Unreleased]
 
+### Changed
+
+- Aligned fuzzification and defuzzification to ADR-0001 ([[0001-slide-mamdani-defuzzification]]): explicit three-branch Degree of Membership; area-weighted output-term centroid `Area_i = a_i(2μ_i−μ_i²)`, `Centroid_i = midval_i`, `Centroid_v = Σ(Centroid_i·Area_i)/Σ(Area_i)` with a `ΣArea_i == 0 → 0` guard.
+- Advisory is defined as the classification (risk-range lookup); no separate classification field.
+- Updated README test vectors to `0.0 / 52.6 / 100.0 / 100.0`; `aggregate` sampled set is now chart-only.
+- Refreshed [[DATA_MODEL]], [[REQUIREMENTS]], [[ARCHITECTURE]], [[PROJECT]], [[UI_GUIDELINES]], and [[TASKS]].
+
 ## [0.1.0] - 2026-10-05
 
 ### Added

@@ -100,17 +100,17 @@ Universe: `0–100`
 | Moderate | `(0, 50, 100)` |
 | High | `(50, 100, 100)` |
 
-Triangle membership function:
+Degree of Membership (DOM) for a term `[lowval, midval, highval]` (the `(a, b, c)` columns above):
 
 ```txt
-0 if x < a or x > c
-1 if x == b
-(x - a) / (b - a) if x < b
-(c - x) / (c - b) if x > b
+DOM = 0                                       if input < lowval or input > highval
+DOM = 1                                       if input == midval
+DOM = (input  - lowval) / (midval - lowval)   if input < midval
+DOM = (highval - input) / (highval - midval)  if input > midval
 ```
 
-Edge terms are right-angled triangles, so the `x == b` check is handled before any division.  
-Inputs are clamped to their universe.
+Edge terms are right-angled triangles, so the `input == midval` check is handled before any
+division. Inputs are clamped to their universe.
 
 ---
 
@@ -142,26 +142,35 @@ The engine can optionally support `OR = max`, but no OR rule is included in the 
 
 ## Inference Stages
 
-The Mamdani engine in `lib/fuzzy.ts` implements four stages:
+The Mamdani engine in `lib/fuzzy.ts` implements the four stages from the example:
 
 1. **Fuzzification**  
-   `fuzzify(x, variable) -> degree per term`
+   `fuzzify(x, variable) -> DOM per term` using the Degree of Membership formula above.
 
-2. **Rule Evaluation**  
-   `evaluateRules -> per-rule firing strength`  
-   `AND = min`, optional `OR = max`
+2. **Rules Evaluation**  
+   The fired value of a rule is the `min` of its antecedent DOMs (`AND = min`, optional
+   `OR = max`). Rules that share a consequent collapse to one value per output term,
+   `μ_i = max` of those rule strengths.
 
-3. **Aggregation**  
-   Clip each output set at its rule’s strength using `min` implication, combine with `max`, sample on `0..100` at `0.01` steps.
-
-4. **Defuzzification**  
-   Centroid:
+3. **Area of each fired output term** (clip at the fired value):
 
    ```txt
-   sum(y * mu) / sum(mu)
+   a_i    = (highval_i - lowval_i) / 2
+   Area_i = a_i (2 * μ_i - μ_i²)
    ```
 
-   If `sum(mu) == 0`, return `0`.
+4. **Defuzzification** — weighted centroid, using each output term's `midval` as its centroid:
+
+   ```txt
+   Centroid_i = midval_i
+   Centroid_v = Σ (Centroid_i * Area_i) / Σ (Area_i)
+   ```
+
+   If `Σ Area_i == 0`, return `0`. `Centroid_v` is the Flood Risk Index; the advisory
+   (classification) is looked up from it.
+
+The combined output set (`aggregate`, sampled on `0..100` at `0.01` steps) is built for the
+chart only and is **not** used in defuzzification.
 
 ---
 
@@ -247,14 +256,14 @@ Run tests:
 npm test
 ```
 
-Expected crisp outputs within `±0.1`:
+Expected crisp outputs within `±0.1` (area-weighted centroid, per Inference Stages):
 
 | Rainfall | River Level | Expected Risk | Fired Rules |
 |----------|-------------|---------------|-------------|
-| `2` | `12.8` | `20.0` | Light + Low -> Low `(0.44)` |
-| `22` | `15` | `50.1` | Moderate + Elevated -> Moderate `(0.667)`, Heavy + Elevated -> High `(0.05)` |
-| `35` | `18` | `78.9` | Heavy + Elevated -> High `(0.333)`, Heavy + Critical -> High `(0.333)` |
-| `60` | `21.5` | `83.2` | Heavy + Critical -> High `(0.917)` |
+| `2` | `12.8` | `0.0` | Light + Low -> Low `(0.44)` |
+| `22` | `15` | `52.6` | Moderate + Elevated -> Moderate `(0.667)`, Heavy + Elevated -> High `(0.05)` |
+| `35` | `18` | `100.0` | Heavy + Elevated -> High `(0.333)`, Heavy + Critical -> High `(0.333)` |
+| `60` | `21.5` | `100.0` | Heavy + Critical -> High `(0.917)` |
 
 If an expected test value does not match the implementation, fix the code, not the spec.
 

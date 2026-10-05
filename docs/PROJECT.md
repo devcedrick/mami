@@ -56,21 +56,25 @@ format or persistence; all fields are non-nullable.
 
 ```ts
 interface FloodRiskResult {
-  risk: number;                 // 0–100 crisp centroid
+  risk: number;                 // 0–100 area-weighted centroid (Centroid_v)
   advisory: {
     label: string;              // "Normal / monitor" | "Prepare" | "Evacuate" | "Forced evacuation"
     color: "Green" | "Yellow" | "Orange" | "Red";
-  };
+  };                            // the classification; derived from risk
   firedRules: {                 // only strength > 0
     rule: FuzzyRule;
     strength: number;           // 0–1 firing strength
   }[];
-  aggregated: {                 // sampled output set
+  aggregated: {                 // sampled output set; chart only
     x: number;                  // 0–100
     mu: number;                 // 0–1
   }[];
 }
 ```
+
+The advisory **is** the classification — there is no separate classification output or
+second mapping. `risk` comes from each output term's clipped area and `midval` centroid
+(see [[DATA_MODEL]] §5), not from the sampled `aggregated` curve, which is for display only.
 
 ## Routes
 

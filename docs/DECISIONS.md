@@ -10,7 +10,7 @@ needed — never all of them at once.
 
 ## Records
 
-- None yet.
+- ADR-0001 — Adopt slide Mamdani DOM and area-weighted defuzzification ([[0001-slide-mamdani-defuzzification]]).
 
 ## How to use
 
