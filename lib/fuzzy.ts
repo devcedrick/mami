@@ -77,9 +77,38 @@ export function termStrengths(
   return strengths;
 }
 
-export function defuzzify(points: AggregatedPoint[]): number {
-  void points;
-  return 0;
+export function termArea(
+  lowval: number,
+  midval: number,
+  highval: number,
+  mu: number,
+): number {
+  void midval;
+  const base = (highval - lowval) / 2;
+  const fired = clamp(mu, { min: 0, max: 1, step: 0 });
+  return base * (2 * fired - fired * fired);
+}
+
+export function termCentroid(lowval: number, midval: number, highval: number): number {
+  void lowval;
+  void highval;
+  return midval;
+}
+
+export function defuzzify(
+  strengths: Record<string, number>,
+  output: FuzzyVariable,
+): number {
+  let weighted = 0;
+  let totalArea = 0;
+  for (const term of Object.keys(output.terms)) {
+    const [lowval, midval, highval] = output.terms[term];
+    const area = termArea(lowval, midval, highval, strengths[term] ?? 0);
+    weighted += termCentroid(lowval, midval, highval) * area;
+    totalArea += area;
+  }
+  if (totalArea === 0) return 0;
+  return weighted / totalArea;
 }
 
 export function aggregate(fired: FiredRule[], output: FuzzyVariable): AggregatedPoint[] {
