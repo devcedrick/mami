@@ -23,14 +23,18 @@ export interface FloodRiskResult {
 }
 
 export function clamp(x: number, universe: Universe): number {
-  void universe;
+  if (Number.isNaN(x)) return universe.min;
+  if (x < universe.min) return universe.min;
+  if (x > universe.max) return universe.max;
   return x;
 }
 
 export function triangularMF(x: number, triplet: Triplet): number {
-  void x;
-  void triplet;
-  return 0;
+  const [lowval, midval, highval] = triplet;
+  if (x < lowval || x > highval) return 0;
+  if (x === midval) return 1;
+  if (x < midval) return (x - lowval) / (midval - lowval);
+  return (highval - x) / (highval - midval);
 }
 
 export function fuzzify(x: number, variable: FuzzyVariable): Record<string, number> {
@@ -48,15 +52,15 @@ export function evaluateRules(
   return [];
 }
 
+export function defuzzify(points: AggregatedPoint[]): number {
+  void points;
+  return 0;
+}
+
 export function aggregate(fired: FiredRule[], output: FuzzyVariable): AggregatedPoint[] {
   void fired;
   void output;
   return [];
-}
-
-export function defuzzify(points: AggregatedPoint[]): number {
-  void points;
-  return 0;
 }
 
 export function inferFloodRisk(rainfallValue: number, riverLevelValue: number): FloodRiskResult {
