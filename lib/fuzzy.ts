@@ -112,9 +112,22 @@ export function defuzzify(
 }
 
 export function aggregate(fired: FiredRule[], output: FuzzyVariable): AggregatedPoint[] {
-  void fired;
-  void output;
-  return [];
+  const { min, max, step } = output.universe;
+  const count = Math.round((max - min) / step);
+  const points: AggregatedPoint[] = [];
+  for (let i = 0; i <= count; i++) {
+    const x = min + i * step;
+    let mu = 0;
+    for (const { rule, strength } of fired) {
+      if (rule.consequent.variable !== output.name) continue;
+      const term = output.terms[rule.consequent.term];
+      if (!term) continue;
+      const clipped = Math.min(strength, triangularMF(x, term));
+      if (clipped > mu) mu = clipped;
+    }
+    points.push({ x, mu });
+  }
+  return points;
 }
 
 export function inferFloodRisk(rainfallValue: number, riverLevelValue: number): FloodRiskResult {
