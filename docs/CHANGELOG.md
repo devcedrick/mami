@@ -9,6 +9,11 @@ Entries state **what** changed; `[ADR-XXXX]` references carry **why**.
 
 ## [Unreleased]
 
+### Added
+
+- Implemented the pure Mamdani engine in `lib/fuzzy.ts` (Phase 0, T0.1–T0.6): `clamp`, `triangularMF` (DOM), `fuzzify`, `evaluateRules`, `termStrengths`, `termArea`, `termCentroid`, `defuzzify`, `aggregate`, and `inferFloodRisk`.
+- Added `lib/fuzzy.test.ts` — 13 tests covering the four README vectors, fired-rule strengths, the ADR-0001 slide worked example, and guards.
+
 ### Changed
 
 - Aligned fuzzification and defuzzification to ADR-0001 ([[0001-slide-mamdani-defuzzification]]): explicit three-branch Degree of Membership; area-weighted output-term centroid `Area_i = a_i(2μ_i−μ_i²)`, `Centroid_i = midval_i`, `Centroid_v = Σ(Centroid_i·Area_i)/Σ(Area_i)` with a `ΣArea_i == 0 → 0` guard.
