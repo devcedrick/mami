@@ -10,13 +10,13 @@ are owned by [[REQUIREMENTS]]. Each box cites its FR/C and a done-check.
 
 ## Phase 0 — Data foundation (no UI)
 
-- [ ] T0.1 `lib/flood-config.ts` — universes, terms, rules, advisories per [[DATA_MODEL]] §2/§4 (FR-2.2, FR-3.1, FR-6.2). Done: exports type-check and match the README tables (`[lowval midval highval]`).
-- [ ] T0.2 `lib/fuzzy.ts` `clamp` + `triangularMF` — Degree of Membership per [[DATA_MODEL]] §5 / ADR-0001 (FR-1.3, FR-2.1). Done: `1` at `midval`, `0` outside `[lowval, highval]`, no division by zero on edge terms.
-- [ ] T0.3 `lib/fuzzy.ts` `fuzzify` — DOM per term (FR-2.2). Done: degrees in `[0,1]`, out-of-universe input clamped first.
-- [ ] T0.4 `lib/fuzzy.ts` `evaluateRules` + `termStrengths` — `AND = min`, optional `OR = max`; `μ_i = max` per output term (FR-3.1, FR-3.2). Done: all 9 rules evaluated; exactly one μ per output term.
-- [ ] T0.5 `lib/fuzzy.ts` `termArea` + `termCentroid` + `defuzzify` — `Area_i = a_i(2μ_i − μ_i²)`, `Centroid_i = midval_i`, `Centroid_v = Σ(midval_i·Area_i)/Σ(Area_i)` (FR-5.1–FR-5.3). Done: `ΣArea_i == 0` returns `0`, never NaN.
-- [ ] T0.5b `lib/fuzzy.ts` `aggregate` — clip/max, sample `0.01`, chart only (FR-4.1). Done: ascending `AggregatedPoint[]`; not used by `defuzzify`.
-- [ ] T0.6 `lib/fuzzy.ts` `inferFloodRisk` — compose stages + advisory lookup (FR-6.2). Done: returns a complete `FloodRiskResult`.
+- [x] T0.1 `lib/flood-config.ts` — universes, terms, rules, advisories per [[DATA_MODEL]] §2/§4 (FR-2.2, FR-3.1, FR-6.2). Done: exports type-check and match the README tables (`[lowval midval highval]`).
+- [x] T0.2 `lib/fuzzy.ts` `clamp` + `triangularMF` — Degree of Membership per [[DATA_MODEL]] §5 / ADR-0001 (FR-1.3, FR-2.1). Done: `1` at `midval`, `0` outside `[lowval, highval]`, no division by zero on edge terms.
+- [x] T0.3 `lib/fuzzy.ts` `fuzzify` — DOM per term (FR-2.2). Done: degrees in `[0,1]`, out-of-universe input clamped first.
+- [x] T0.4 `lib/fuzzy.ts` `evaluateRules` + `termStrengths` — `AND = min`, optional `OR = max`; `μ_i = max` per output term (FR-3.1, FR-3.2). Done: all 9 rules evaluated; exactly one μ per output term.
+- [x] T0.5 `lib/fuzzy.ts` `termArea` + `termCentroid` + `defuzzify` — `Area_i = a_i(2μ_i − μ_i²)`, `Centroid_i = midval_i`, `Centroid_v = Σ(midval_i·Area_i)/Σ(Area_i)` (FR-5.1–FR-5.3). Done: `ΣArea_i == 0` returns `0`, never NaN.
+- [x] T0.5b `lib/fuzzy.ts` `aggregate` — clip/max, sample `0.01`, chart only (FR-4.1). Done: ascending `AggregatedPoint[]`; not used by `defuzzify`.
+- [x] T0.6 `lib/fuzzy.ts` `inferFloodRisk` — compose stages + advisory lookup (FR-6.2). Done: returns a complete `FloodRiskResult`.
 
 ## Phase 1 — Read views on seeded data
 
@@ -38,10 +38,10 @@ are owned by [[REQUIREMENTS]]. Each box cites its FR/C and a done-check.
 
 ## Phase 4 — Verification + hardening
 
-- [ ] T4.1 `lib/fuzzy.test.ts` — Vitest vectors within `±0.1` (C-8): `(2,12.8)→0.0`, `(22,15)→52.6`, `(35,18)→100.0`, `(60,21.5)→100.0`. Done: all pass.
-- [ ] T4.2 Fired-rules assertions per vector (README): e.g. `(60,21.5)` → Heavy+Critical High `(0.917)`. Done: strengths match.
-- [ ] T4.3 NFR sweep — `npm test`, `npm run lint`, `npm run build` (C-5, NFR-1..7). Done: all green; no network calls, no stored data.
-- [ ] T4.4 Slides worked-example test (ADR-0001): DOM `0.8842 / 0.2945 / 0.3055`; `Area 9.0596 / 10.0449`; `Centroid_v 61.9591` ([[DATA_MODEL]] §6). Done: generic `triangularMF`/`termArea`/`defuzzify` reproduce the numbers.
+- [x] T4.1 `lib/fuzzy.test.ts` — Vitest vectors within `±0.1` (C-8): `(2,12.8)→0.0`, `(22,15)→52.6`, `(35,18)→100.0`, `(60,21.5)→100.0`. Done: all pass.
+- [x] T4.2 Fired-rules assertions per vector (README): e.g. `(60,21.5)` → Heavy+Critical High `(0.917)`. Done: strengths match.
+- [x] T4.3 NFR sweep — `npm test`, `npm run lint`, `npm run build` (C-5, NFR-1..7). Done: all green; no network calls, no stored data.
+- [x] T4.4 Slides worked-example test (ADR-0001): DOM `0.8842 / 0.2945 / 0.3055`; `Area 9.0596 / 10.0449`; `Centroid_v 61.9591` ([[DATA_MODEL]] §6). Done: generic `triangularMF`/`termArea`/`defuzzify` reproduce the numbers.
 
 ## Out of scope for this list
 
