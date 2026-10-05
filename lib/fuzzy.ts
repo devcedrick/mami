@@ -1,8 +1,13 @@
-import type {
-  FuzzyRule,
-  FuzzyVariable,
-  Triplet,
-  Universe,
+import {
+  advisories,
+  floodRisk,
+  rainfall,
+  riverLevel,
+  rules,
+  type FuzzyRule,
+  type FuzzyVariable,
+  type Triplet,
+  type Universe,
 } from "./flood-config";
 
 export interface FiredRule {
@@ -131,12 +136,19 @@ export function aggregate(fired: FiredRule[], output: FuzzyVariable): Aggregated
 }
 
 export function inferFloodRisk(rainfallValue: number, riverLevelValue: number): FloodRiskResult {
-  void rainfallValue;
-  void riverLevelValue;
+  const degrees: Record<string, Record<string, number>> = {
+    [rainfall.name]: fuzzify(rainfallValue, rainfall),
+    [riverLevel.name]: fuzzify(riverLevelValue, riverLevel),
+  };
+  const fired = evaluateRules(degrees, rules);
+  const strengths = termStrengths(fired, floodRisk);
+  const risk = defuzzify(strengths, floodRisk);
+  const advisory =
+    advisories.find((entry) => risk <= entry.max) ?? advisories[advisories.length - 1];
   return {
-    risk: 0,
-    advisory: { label: "Normal / monitor", color: "Green" },
-    firedRules: [],
-    aggregated: [],
+    risk,
+    advisory: { label: advisory.label, color: advisory.color },
+    firedRules: fired.filter(({ strength }) => strength > 0),
+    aggregated: aggregate(fired, floodRisk),
   };
 }
