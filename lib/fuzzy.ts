@@ -50,9 +50,31 @@ export function evaluateRules(
   degrees: Record<string, Record<string, number>>,
   ruleSet: FuzzyRule[],
 ): FiredRule[] {
-  void degrees;
-  void ruleSet;
-  return [];
+  return ruleSet.map((rule) => {
+    const doms = rule.antecedent.map(({ variable, term }) => degrees[variable]?.[term] ?? 0);
+    let strength = 0;
+    if (doms.length > 0) {
+      strength = rule.connective === "OR" ? Math.max(...doms) : Math.min(...doms);
+    }
+    return { rule, strength };
+  });
+}
+
+export function termStrengths(
+  fired: FiredRule[],
+  output: FuzzyVariable,
+): Record<string, number> {
+  const strengths: Record<string, number> = {};
+  for (const term of Object.keys(output.terms)) {
+    strengths[term] = 0;
+  }
+  for (const { rule, strength } of fired) {
+    if (rule.consequent.variable !== output.name) continue;
+    const term = rule.consequent.term;
+    if (!(term in strengths)) continue;
+    if (strength > strengths[term]) strengths[term] = strength;
+  }
+  return strengths;
 }
 
 export function defuzzify(points: AggregatedPoint[]): number {
