@@ -38,9 +38,12 @@ export function triangularMF(x: number, triplet: Triplet): number {
 }
 
 export function fuzzify(x: number, variable: FuzzyVariable): Record<string, number> {
-  void x;
-  void variable;
-  return {};
+  const crisp = clamp(x, variable.universe);
+  const degrees: Record<string, number> = {};
+  for (const term of Object.keys(variable.terms)) {
+    degrees[term] = triangularMF(crisp, variable.terms[term]);
+  }
+  return degrees;
 }
 
 export function evaluateRules(
