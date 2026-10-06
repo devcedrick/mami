@@ -13,7 +13,7 @@ data via props (see [[ARCHITECTURE]] §3).
 
 - Use Tailwind utilities directly (flex/grid, `gap-*`, `p-*`, `rounded-lg`, `border`).
 - Panels are card-like sections (`rounded-lg border p-4`) stacked in one responsive column; wider than `md` may use a two-column grid.
-- Sections in order: inputs → fuzzification → fired rules → aggregated output → risk result → membership functions → Mami.
+- Default sections in order: header → inputs → risk result → Mami (Phase 3). Advanced sections live inside the "See how this was decided" disclosure: fuzzification → fired rules → aggregated output → membership functions.
 - Escape-hatch custom CSS only when utilities cannot express it (e.g. a token-driven gradient); keep it in `app/globals.css`.
 
 ## Color and theming
@@ -35,19 +35,28 @@ data via props (see [[ARCHITECTURE]] §3).
 | `--color-risk-forced` | `red-600` | `red-400` | advisory "Forced evacuation" |
 | `--font-sans` | Geist | Geist | body font |
 
+## Progressive disclosure
+
+- The default view is public-first: header, inputs, and the risk result only.
+- The technical panels (fuzzification, fired rules, aggregated output, membership functions) sit inside a single native `<details>` disclosure labelled "See how this was decided".
+- The disclosure is closed by default, keyboard-focusable, and never required to use the app (NFR-8).
+- Never delete these panels; keep them reachable for students and educators (FR-9).
+
 ## Component visual contracts
 
 - `InputSlider`: label + unit, a range control and a synced number field; both focusable; shows the clamped value.
-- `FuzzificationPanel`: table of term → degree (`0.00`–`1.00`) for rainfall and river level; zeros visible.
-- `FiredRulesTable`: rows of `IF rainfall AND river THEN risk — strength`; hidden rows when empty with a "No rules fired" note.
-- `AggregatedOutputChart`: Recharts curve of `aggregated` with a labelled vertical centroid line at `risk`; axes `0–100`. The line marks the area-weighted `Centroid_v` (per-term areas), which is not necessarily the balance point of the drawn curve.
-- `MembershipFunctionsSection`: one small triangular plot per term per variable; shared axis labels.
+- `FuzzificationPanel` (advanced): table of term → degree (`0.00`–`1.00`) for rainfall and river level; zeros visible.
+- `FiredRulesTable` (advanced): rows of `IF rainfall AND river THEN risk — strength`; hidden rows when empty with a "No rules fired" note.
+- `AggregatedOutputChart` (advanced): Recharts curve of `aggregated` with a labelled vertical centroid line at `risk`; axes `0–100`. The line marks the area-weighted `Centroid_v` (per-term areas), which is not necessarily the balance point of the drawn curve.
+- `MembershipFunctionsSection` (advanced): one small triangular plot per term per variable; shared axis labels.
 - `RiskResult`: large one-decimal index; advisory label with the matching risk color (text, not color alone).
 - `Mami`: mascot whose fill is the advisory color and whose caption is the advisory line.
 
 ## Screen rules and states
 
 - Single screen; no pagination or routing.
+- **Default:** only the header, inputs, and risk result are visible; the technical disclosure is collapsed.
+- **Expanded:** the user may open "See how this was decided" to inspect the FIS internals; this state is session-only and not persisted.
 - **Empty / initial:** render valid defaults (rainfall `0`, river level `10`) with a complete, non-NaN result.
 - **Parsing:** while the number field is mid-edit (empty or non-numeric), keep the last valid value and do not crash; the field stays editable.
 - **Validation:** all values are clamped to their universe (rainfall `0–60`, river `10–22`); never reject silently — show the clamped value.

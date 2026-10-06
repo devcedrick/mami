@@ -11,6 +11,7 @@ needed — never all of them at once.
 ## Records
 
 - ADR-0001 — Adopt slide Mamdani DOM and area-weighted defuzzification ([[0001-slide-mamdani-defuzzification]]).
+- ADR-0002 — Public-first dashboard with opt-in decision transparency ([[0002-public-first-dashboard]]).
 
 ## How to use
 

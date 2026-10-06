@@ -20,12 +20,14 @@ are owned by [[REQUIREMENTS]]. Each box cites its FR/C and a done-check.
 
 ## Phase 1 — Read views on seeded data
 
-- [ ] T1.1 `components/InputSlider.tsx` — labelled range + number input, clamped (FR-1.1, FR-1.2, FR-1.4). Done: keyboard and drag both update; invalid text keeps last valid value.
-- [ ] T1.2 `components/FuzzificationPanel.tsx` (FR-2.3). Done: shows every term degree including zeros.
-- [ ] T1.3 `components/FiredRulesTable.tsx` (FR-3.2). Done: only strengths `> 0` listed; empty state shown.
-- [ ] T1.4 `components/RiskResult.tsx` (FR-6.1, FR-6.2). Done: one-decimal risk + advisory label/color.
-- [ ] T1.5 `components/MembershipFunctionsSection.tsx` (FR-7.1). Done: one MF plot per term for all variables.
-- [ ] T1.6 `app/page.tsx` — own state, call `inferFloodRisk`, wire all panels (FR-1.3, FR-6.3). Done: changing either input updates every panel with no submit step.
+- [x] T1.1 `components/InputSlider.tsx` — labelled range + number input, clamped (FR-1.1, FR-1.2, FR-1.4). Done: keyboard and drag both update; invalid text keeps last valid value.
+- [x] T1.2 `components/FuzzificationPanel.tsx` (FR-2.3). Done: shows every term degree including zeros.
+- [x] T1.3 `components/FiredRulesTable.tsx` (FR-3.3). Done: only strengths `> 0` listed; empty state shown.
+- [x] T1.4 `components/RiskResult.tsx` (FR-6.1, FR-6.2). Done: one-decimal risk + advisory label/color.
+- [x] T1.5 `components/MembershipFunctionsSection.tsx` (FR-7.1). Done: one MF plot per term for all variables.
+- [x] T1.6 `app/page.tsx` — own state, call `inferFloodRisk`, wire all panels (FR-1.3, FR-6.3). Done: changing either input updates every panel with no submit step.
+- [x] T1.7 `app/page.tsx` — public-first header: name + friendly tagline, remove the calibration subtitle (FR-9.3). Done: header shows the app name and tagline only.
+- [x] T1.8 `app/page.tsx` — accessible `<details>` disclosure wrapping the FIS internals (FR-9.1, FR-9.2, NFR-8). Done: default view hides the panels; expanding reveals fuzzification, fired rules, and MF plots.
 
 ## Phase 2 — Aggregated output
 

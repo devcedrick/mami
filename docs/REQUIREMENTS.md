@@ -26,13 +26,13 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 
   The `input == midval` check runs before any division, so edge (right/left-angled) terms never divide by zero.
 - FR-2.2: Engine fuzzifies both inputs against the terms in `lib/flood-config.ts` (`fuzzify`).
-- FR-2.3: UI shows the membership degree of **every** term for both inputs, including zeros (`components/FuzzificationPanel.tsx`).
+- FR-2.3: On demand, the UI shows the membership degree of **every** term for both inputs, including zeros, via the advanced disclosure (`components/FuzzificationPanel.tsx`, FR-9).
 
 ### FR-3 Rule Evaluation
 
 - FR-3.1: Engine evaluates all 9 rules with `AND = min` (and optional `OR = max`), producing a firing strength per rule (`lib/fuzzy.ts` `evaluateRules`, rules in `lib/flood-config.ts`).
 - FR-3.2: Engine collapses rules that share an output term to one fired value per term, `μ_i = max` of those rule strengths (`lib/fuzzy.ts` `termStrengths`).
-- FR-3.3: UI lists only rules with strength `> 0`, each with its strength (`components/FiredRulesTable.tsx`).
+- FR-3.3: On demand, the UI lists only rules with strength `> 0`, each with its strength, via the advanced disclosure (`components/FiredRulesTable.tsx`, FR-9).
 
 ### FR-4 Aggregation
 
@@ -52,12 +52,18 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 
 ### FR-7 Membership-Function Plots
 
-- FR-7.1: UI renders a separate triangular MF plot for each term of every variable (`components/MembershipFunctionsSection.tsx`).
+- FR-7.1: On demand, the UI renders a separate triangular MF plot for each term of every variable, via the advanced disclosure (`components/MembershipFunctionsSection.tsx`, FR-9).
 
 ### FR-8 Mami Mascot
 
 - FR-8.1: Mami's color reflects the current advisory level using the FR-6.2 mapping (`components/Mami.tsx` — not yet created; see [[TASKS]]).
 - FR-8.2: Mami shows an advisory line matching the label (e.g. "Mami says: Evacuate now!") (`components/Mami.tsx`).
+
+### FR-9 Public-First Dashboard
+
+- FR-9.1: The default dashboard shows only the inputs and the risk result; the FIS internals (fuzzification, fired rules, membership functions, aggregated output) are hidden by default (`app/page.tsx`).
+- FR-9.2: A keyboard-accessible disclosure reveals the FIS internals on demand (`app/page.tsx`).
+- FR-9.3: The header shows the app name and a plain-language tagline, not the technical calibration label (`app/page.tsx`).
 
 ## 2. Non-functional Requirements
 
@@ -68,6 +74,7 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 - NFR-5 **Usability:** Two inputs give live, legible feedback (degrees, fired rules, curve, advisory) without a submit step.
 - NFR-6 **Theming:** Advisory colors and surface tokens are defined once in `app/globals.css` and used consistently in light/dark.
 - NFR-7 **Accessibility:** Inputs are labelled, keyboard-focusable range/number controls; advisory is conveyed by text, not color alone.
+- NFR-8 **Progressive disclosure:** The advanced section is a native, focusable disclosure; the app is fully usable without ever opening it.
 
 ## 3. Constraints
 

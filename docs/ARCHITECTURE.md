@@ -37,7 +37,7 @@ Rules:
 
 | File | Title | Reads / writes | FR trace |
 | :--- | :---- | :------------- | :------- |
-| `app/page.tsx` | Mami dashboard | reads/writes input state; reads `inferFloodRisk`, config vars; writes all panels | FR-1.1–FR-8.2 |
+| `app/page.tsx` | Mami dashboard | reads/writes input state; reads `inferFloodRisk`, config vars; writes default view + opt-in advanced disclosure | FR-1.1–FR-9.3 |
 | `app/layout.tsx` | Root shell | reads metadata/fonts; writes `<html>/<body>` | — |
 | `app/globals.css` | Theme | Tailwind import + `@theme` tokens | NFR-6 |
 
@@ -173,3 +173,4 @@ Persists: nothing. Each render is derived from current inputs; reload resets to 
 | FR-6.3 | `app/page.tsx` | `components/AggregatedOutputChart.tsx` |
 | FR-7.1 | `app/page.tsx` | `components/MembershipFunctionsSection.tsx` |
 | FR-8.1, FR-8.2 | `app/page.tsx` | `components/Mami.tsx` (planned) |
+| FR-9.1–FR-9.3 | `app/page.tsx` | `app/page.tsx` |

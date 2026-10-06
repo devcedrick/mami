@@ -21,6 +21,7 @@ Vault index for the Mami Flood Risk Warning System. Notes are flat, one topic ea
 - [[DECISIONS]] — ADR index.
 - [[CHANGELOG]] — released and unreleased changes.
 - [[0001-slide-mamdani-defuzzification]] — accepted ADR (DOM + area-weighted defuzzification).
+- [[0002-public-first-dashboard]] — accepted ADR (public-first layout + opt-in disclosure).
 - [[0000-template]] — ADR template (`adr/`).
 
 ## Conventions

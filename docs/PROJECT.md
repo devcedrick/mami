@@ -9,8 +9,8 @@ Mami is a client-side Mamdani-type Fuzzy Inference System (FIS) web app that tur
 
 ## Purpose
 
-- Let a user enter rainfall intensity and river level and see risk immediately.
-- Show the fuzzy reasoning transparently: membership degrees, fired rules, and the aggregated output curve.
+- Let the general public enter two plain readings and get a clear risk reading and advisory immediately.
+- Reveal the fuzzy reasoning on demand — membership degrees, fired rules, and the aggregated output curve — without cluttering the default view.
 - Map the crisp result to PAGASA-style advisories (monitor → prepare → evacuate → forced evacuation).
 - Teach Mamdani inference with a real, testable engine and no third-party fuzzy library.
 - Present Mami, the mascot, whose color mirrors the current advisory level.
@@ -19,12 +19,14 @@ Mami is a client-side Mamdani-type Fuzzy Inference System (FIS) web app that tur
 
 | Feature | Description |
 | :------ | :---------- |
+| Public-first layout | Inputs and the advisory render by default; technical panels stay out of the way. |
+| Decision transparency | A "See how this was decided" disclosure reveals fuzzification, fired rules, and MF plots on demand. |
 | Dual inputs | Sliders with numeric entry for rainfall intensity (0–60 mm/hr) and river level (10–22 m). |
-| Fuzzification panel | Shows membership degree (0–1) of every term for both inputs. |
-| Fired-rules table | Lists only rules whose firing strength is `> 0`, with strength values. |
-| Aggregated output chart | Recharts plot of the combined output set with a centroid vertical line. |
+| Fuzzification panel | Shows membership degree (0–1) of every term for both inputs (advanced). |
+| Fired-rules table | Lists only rules whose firing strength is `> 0`, with strength values (advanced). |
+| Aggregated output chart | Recharts plot of the combined output set with a centroid vertical line (advanced). |
 | Risk result | Crisp Flood Risk Index plus advisory label and color. |
-| Membership-function plots | Separate triangular MF plots for rainfall, river level, and risk. |
+| Membership-function plots | Separate triangular MF plots for rainfall, river level, and risk (advanced). |
 | Pure fuzzy engine | Testable inference in `lib/fuzzy.ts` with no external fuzzy dependency. |
 | Mami mascot | River-sprite/catfish whose color follows the advisory level (green/yellow/orange/red). |
 
@@ -41,13 +43,13 @@ Mami is a client-side Mamdani-type Fuzzy Inference System (FIS) web app that tur
 ## Basic User Flow
 
 1. User opens `/` on any modern browser.
-2. Page renders Mami, the two input controls, and empty/default panels.
+2. Page shows the Mami header (name + tagline) and the two input controls with a default reading.
 3. User drags the rainfall slider or types a value; input is clamped to `0–60 mm/hr`.
 4. User drags the river-level slider or types a value; input is clamped to `10–22 m`.
 5. Every change recomputes `inferFloodRisk(rainfall, riverLevel)` in `lib/fuzzy.ts`.
-6. Panels update: membership degrees, fired rules, aggregated curve + centroid.
-7. Risk index renders with its advisory label and color; Mami changes color to match.
-8. No data is sent anywhere; nothing is persisted between reloads.
+6. The risk index renders with its advisory label and color (the public view).
+7. Optionally, the user expands "See how this was decided" to inspect membership degrees, fired rules, and MF plots.
+8. Mami's color will follow the advisory level (Phase 3); no data is sent anywhere and nothing is persisted.
 
 ## Flood Risk Result Format
 
@@ -80,7 +82,7 @@ second mapping. `risk` comes from each output term's clipped area and `midval` c
 
 | Route | Title | Behavior |
 | :---- | :---- | :------- |
-| `/` (`app/page.tsx`) | Mami dashboard | Owns all state and the only UI. Reads inputs, calls the engine, renders every panel (inputs, fuzzification, fired rules, aggregate chart, risk result, MF plots, mascot). |
+| `/` (`app/page.tsx`) | Mami dashboard | Owns all state and the only UI. Reads inputs, calls the engine, and renders the public view (header, inputs, risk result) plus an opt-in disclosure for the technical panels (fuzzification, fired rules, aggregate chart, MF plots). |
 
 Rationale: the app is a single-purpose calculator with live-derived views. One route keeps
 all panels in sync from one state object and avoids routing overhead for what is really one
@@ -118,7 +120,7 @@ mami/
 Notes:
 
 - The mascot (`components/Mami.tsx`) is described but not yet a file; treat as a gap to add.
-- `lib/fuzzy.ts` currently holds stub signatures returning neutral values — see [[TASKS]].
+- `lib/fuzzy.ts` implements the pure engine; `lib/fuzzy.test.ts` covers it — see [[TASKS]].
 - Tailwind v4 is CSS-first: there is intentionally no `tailwind.config.ts`.
 - The README's `flood-risk-fis/` tree is a naming sketch; the live repo root is `mami/`.
 - Assumption: all computation stays client-side; revisit via ADR if that changes.
