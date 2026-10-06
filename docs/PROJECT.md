@@ -26,7 +26,7 @@ Mami is a client-side Mamdani-type Fuzzy Inference System (FIS) web app that tur
 | Fired-rules table | Lists only rules whose firing strength is `> 0`, with strength values (advanced). |
 | Aggregated output chart | Recharts plot of the combined output set with a centroid vertical line (advanced). |
 | Risk result | Crisp Flood Risk Index plus advisory label and color. |
-| Membership-function plots | Separate triangular MF plots for rainfall, river level, and risk (advanced). |
+| Membership-function plots | One MF chart per variable plotting all its terms together — shoulders at the extremes, triangles in the middle (advanced). |
 | Pure fuzzy engine | Testable inference in `lib/fuzzy.ts` with no external fuzzy dependency. |
 | Mami mascot | River-sprite/catfish whose color follows the advisory level (green/yellow/orange/red). |
 
@@ -74,9 +74,10 @@ interface FloodRiskResult {
 }
 ```
 
-The advisory **is** the classification — there is no separate classification output or
-second mapping. `risk` comes from each output term's clipped area and `midval` centroid
-(see [[DATA_MODEL]] §5), not from the sampled `aggregated` curve, which is for display only.
+The advisory **is** the output classification: `classify(risk)` picks the output term with the
+highest DOM at the risk value (see [[DATA_MODEL]] §5). `risk` comes from each output term's
+clipped area and plateau-midpoint centroid, not from the sampled `aggregated` curve, which is
+for display only.
 
 ## Routes
 

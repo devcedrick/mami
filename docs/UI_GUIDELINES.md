@@ -19,7 +19,7 @@ data via props (see [[ARCHITECTURE]] §3).
 ## Color and theming
 
 - Theme tokens live once in `app/globals.css` under `@theme` (Tailwind v4 CSS-first; there is no `tailwind.config.ts`).
-- Advisory colors come from `advisories[].color` in `lib/flood-config.ts`; they must map 1:1 to tokens below and appear consistently in light and dark.
+- Advisory colors come from the `advisories` map in `lib/flood-config.ts`; they must map 1:1 to tokens below and appear consistently in light and dark.
 - Never hardcode hex values in components; reference tokens (or Tailwind palette classes bound to them).
 
 | Token | Light | Dark | Job |
@@ -48,7 +48,7 @@ data via props (see [[ARCHITECTURE]] §3).
 - `FuzzificationPanel` (advanced): table of term → degree (`0.00`–`1.00`) for rainfall and river level; zeros visible.
 - `FiredRulesTable` (advanced): rows of `IF rainfall AND river THEN risk — strength`; hidden rows when empty with a "No rules fired" note.
 - `AggregatedOutputChart` (advanced): Recharts curve of `aggregated` with a labelled vertical centroid line at `risk`; axes `0–100`. The line marks the area-weighted `Centroid_v` (per-term areas), which is not necessarily the balance point of the drawn curve.
-- `MembershipFunctionsSection` (advanced): one small triangular plot per term per variable; shared axis labels.
+- `MembershipFunctionsSection` (advanced): one MF chart per variable plotting **all** of its terms together (left/right shoulders at the extremes, triangles in the middle), with a legend and a themed, high-contrast tooltip.
 - `RiskResult`: large one-decimal index; advisory label with the matching risk color (text, not color alone).
 - `Mami`: mascot whose fill is the advisory color and whose caption is the advisory line.
 
