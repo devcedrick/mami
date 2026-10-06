@@ -24,7 +24,7 @@ export default function Home() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 sm:p-8">
-      <header className="flex flex-col gap-1 text-center">
+      <header className="flex flex-col gap-1 text-left">
         <h1 className="text-3xl font-bold">Mami</h1>
         <p className="text-sm text-muted">Flood risk advisory — keep an eye on the river.</p>
       </header>
