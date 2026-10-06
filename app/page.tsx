@@ -24,11 +24,9 @@ export default function Home() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 sm:p-8">
-      <header className="flex flex-col gap-1">
+      <header className="flex flex-col gap-1 text-center">
         <h1 className="text-3xl font-bold">Mami</h1>
-        <p className="text-sm text-muted">
-          Flood Risk Warning System — Marikina River (Sto. Niño gauge)
-        </p>
+        <p className="text-sm text-muted">Flood risk advisory — keep an eye on the river.</p>
       </header>
 
       <section className="rounded-lg border border-line bg-card p-4">
@@ -55,13 +53,24 @@ export default function Home() {
         </div>
       </section>
 
-      <FuzzificationPanel
-        rainfallDegrees={rainfallDegrees}
-        riverLevelDegrees={riverLevelDegrees}
-      />
-      <FiredRulesTable firedRules={result.firedRules} />
       <RiskResult result={result} />
-      <MembershipFunctionsSection variables={VARIABLES} />
+
+      <details className="rounded-lg border border-line bg-card p-4">
+        <summary className="cursor-pointer text-sm font-semibold">
+          See how this was decided
+        </summary>
+        <p className="mt-2 text-xs text-muted">
+          The fuzzy logic behind the advisory — for the curious.
+        </p>
+        <div className="mt-4 flex flex-col gap-4">
+          <FuzzificationPanel
+            rainfallDegrees={rainfallDegrees}
+            riverLevelDegrees={riverLevelDegrees}
+          />
+          <FiredRulesTable firedRules={result.firedRules} />
+          <MembershipFunctionsSection variables={VARIABLES} />
+        </div>
+      </details>
     </div>
   );
 }
