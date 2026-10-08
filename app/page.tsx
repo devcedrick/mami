@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import AggregatedOutputChart from "@/components/AggregatedOutputChart";
 import FiredRulesTable from "@/components/FiredRulesTable";
@@ -25,9 +26,20 @@ export default function Home() {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 p-4 sm:p-8">
-      <header className="flex flex-col gap-1 text-left">
-        <h1 className="text-3xl font-bold">Mami</h1>
-        <p className="text-sm text-muted">Stay a step ahead of the flood.</p>
+      <header className="flex items-center gap-4">
+        <Image
+          src="/header-mascot.png"
+          alt="Mami, the friendly flood-risk mascot"
+          width={1122}
+          height={1402}
+          priority
+          sizes="64px"
+          className="h-16 w-auto shrink-0"
+        />
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h1 className="text-3xl font-bold leading-tight tracking-tight">Mami</h1>
+          <p className="text-sm text-muted">Stay a step ahead of the flood.</p>
+        </div>
       </header>
 
       <section className="rounded-lg border border-line bg-card p-4">
