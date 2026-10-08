@@ -19,9 +19,7 @@ The name **Mami** is short for **Mamdani**, and also the name of the app’s cut
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Testing](#testing)
-- [Deployment](#deployment)
-- [Mami the Mascot](#mami-the-mascot)
-- [Deliverables](#deliverables)
+- [License](#license)
 
 ---
 
@@ -32,7 +30,7 @@ Mami accepts two crisp inputs:
 1. **Rainfall Intensity** in mm/hr
 2. **River Level** in meters
 
-It returns a crisp **Flood Risk Index** from `0` to `100`, plus an advisory label:
+It returns a crisp **Flood Risk Index** on a `0`–`100` scale, plus an advisory label:
 
 | Risk Index | Advisory | Mami Color |
 |------------|----------|------------|
@@ -59,11 +57,12 @@ The Marikina River is one of the most flood-prone areas in Metro Manila. The Sto
 ## Features
 
 - Two sliders with numeric inputs for rainfall and river level
-- Fuzzification panel showing membership degree of every term
-- Fired-rules table showing only rules with strength `> 0`
-- Aggregated output plot with centroid line using Recharts
+- Public-first view: inputs and the risk result shown by default
+- Fuzzification panel showing the membership degree of every term (on demand)
+- Fired-rules table showing only rules with strength `> 0` (on demand)
+- Aggregated output chart with a centroid line using Recharts (on demand)
 - Final risk index with advisory label
-- Separate membership-function plots for all variables
+- One membership-function chart per variable, overlaying all of its terms (on demand)
 - Pure, testable fuzzy engine with no external fuzzy library
 
 ---
@@ -219,7 +218,7 @@ chart only and is **not** used in defuzzification.
 ## Project Structure
 
 ```txt
-flood-risk-fis/
+mami/
 ├─ app/
 │  ├─ globals.css
 │  ├─ layout.tsx
@@ -235,12 +234,15 @@ flood-risk-fis/
 │  ├─ flood-config.ts
 │  ├─ fuzzy.ts
 │  └─ fuzzy.test.ts
-├─ next.config.mjs
-├─ package.json
+├─ docs/
+│  └─ …
+├─ next.config.ts
+├─ eslint.config.mjs
 ├─ postcss.config.mjs
-├─ tailwind.config.ts
+├─ vitest.config.mts
 ├─ tsconfig.json
-└─ vitest.config.ts
+├─ package.json
+└─ README.md
 ```
 
 ---
@@ -297,55 +299,6 @@ Expected crisp outputs within `±0.1` (area-weighted centroid, per Inference Sta
 | `60` | `21.5` | `93.75` | Heavy + Critical -> Forced `(1.0)` |
 
 If an expected test value does not match the implementation, fix the code, not the spec.
-
----
-
-## Deployment
-
-Deploy on Vercel:
-
-1. Push the project to GitHub.
-2. Import the repository into Vercel.
-3. Keep the default Next.js settings.
-4. Deploy.
-
----
-
-## Mami the Mascot
-
-**Mami** is the app’s friendly guide.
-
-- Name origin: **Mamdani**
-- Form: a cute water-drop / river catfish with whiskers that look like fuzzy membership curves
-- Behavior: Mami’s color follows the advisory level
-  - Green: normal / monitor
-  - Yellow: prepare
-  - Orange: evacuate
-  - Red: forced evacuation
-
-Example Mami lines:
-
-> “Mami says: Keep an eye on the river!”  
-> “Mami says: Prepare — the river is rising.”  
-> “Mami says: Evacuate now!”
-
----
-
-## Deliverables
-
-This repository supports the school activity deliverable:
-
-1. Folder structure
-2. `lib/fuzzy.ts` and `lib/flood-config.ts`
-3. Tests
-4. UI components and page
-5. Run instructions
-
-Final PDF should include:
-
-- Implementation details
-- Walkthrough screenshots
-- Link to the code repository
 
 ---
 
