@@ -1,6 +1,6 @@
 # Mami — Flood Risk Warning System
 
-> **Mami says:** Keep an eye on the river!
+> **Mami says:** Stay a step ahead of the flood.
 
 **Mami** is a Mamdani-type Fuzzy Inference System (FIS) web app for flood risk warning, calibrated to the **Marikina River (Sto. Niño gauge), Philippines**.  
 The name **Mami** is short for **Mamdani**, and also the name of the app’s cute mascot: a friendly river sprite / water-drop catfish whose color changes with the advisory level.

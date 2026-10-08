@@ -14,6 +14,7 @@ needed — never all of them at once.
 - ADR-0002 — Public-first dashboard with opt-in decision transparency ([[0002-public-first-dashboard]]).
 - ADR-0003 — Shoulder membership functions with strict triplets ([[0003-shoulder-membership-functions]]).
 - ADR-0004 — Four-term advisory-aligned output ([[0004-four-term-output]]).
+- ADR-0005 — Refresh the header tagline ([[0005-refresh-tagline]]).
 
 ## How to use
 

@@ -24,6 +24,7 @@ Vault index for the Mami Flood Risk Warning System. Notes are flat, one topic ea
 - [[0002-public-first-dashboard]] — accepted ADR (public-first layout + opt-in disclosure).
 - [[0003-shoulder-membership-functions]] — accepted ADR (shoulder MFs + strict triplets).
 - [[0004-four-term-output]] — accepted ADR (4 advisory-aligned output terms + classification).
+- [[0005-refresh-tagline]] — accepted ADR (header tagline refresh).
 - [[0000-template]] — ADR template (`adr/`).
 
 ## Conventions
