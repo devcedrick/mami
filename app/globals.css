@@ -3,11 +3,25 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card: #ffffff;
+  --line: #e4e4e7;
+  --muted: #71717a;
+  --risk-normal: #16a34a;
+  --risk-prepare: #eab308;
+  --risk-evacuate: #f97316;
+  --risk-forced: #dc2626;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-risk-normal: var(--risk-normal);
+  --color-risk-prepare: var(--risk-prepare);
+  --color-risk-evacuate: var(--risk-evacuate);
+  --color-risk-forced: var(--risk-forced);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,11 +30,18 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --card: #111111;
+    --line: #27272a;
+    --muted: #a1a1aa;
+    --risk-normal: #4ade80;
+    --risk-prepare: #facc15;
+    --risk-evacuate: #fb923c;
+    --risk-forced: #f87171;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }

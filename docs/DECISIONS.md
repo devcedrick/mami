@@ -11,6 +11,10 @@ needed — never all of them at once.
 ## Records
 
 - ADR-0001 — Adopt slide Mamdani DOM and area-weighted defuzzification ([[0001-slide-mamdani-defuzzification]]).
+- ADR-0002 — Public-first dashboard with opt-in decision transparency ([[0002-public-first-dashboard]]).
+- ADR-0003 — Shoulder membership functions with strict triplets ([[0003-shoulder-membership-functions]]).
+- ADR-0004 — Four-term advisory-aligned output ([[0004-four-term-output]]).
+- ADR-0005 — Refresh the header tagline ([[0005-refresh-tagline]]).
 
 ## How to use
 

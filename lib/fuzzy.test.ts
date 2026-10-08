@@ -2,16 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   aggregate,
   clamp,
+  classify,
   defuzzify,
   evaluateRules,
   fuzzify,
   inferFloodRisk,
+  memberMF,
+  orderedTerms,
   termArea,
   termCentroid,
+  termShape,
   termStrengths,
   triangularMF,
 } from "./fuzzy";
-import { floodRisk, rainfall, riverLevel, rules, type FuzzyVariable } from "./flood-config";
+import { floodRisk, rainfall, riverLevel, rules } from "./flood-config";
 
 describe("clamp", () => {
   it("bounds inputs to the universe and guards non-finite values", () => {
@@ -39,11 +43,53 @@ describe("triangularMF (Degree of Membership)", () => {
   });
 });
 
+describe("memberMF shoulders", () => {
+  it("left shoulder is flat then falls", () => {
+    expect(memberMF(0, [0, 7.5, 15], "left")).toBe(1);
+    expect(memberMF(7.5, [0, 7.5, 15], "left")).toBe(1);
+    expect(memberMF(11.25, [0, 7.5, 15], "left")).toBeCloseTo(0.5, 6);
+    expect(memberMF(15, [0, 7.5, 15], "left")).toBe(0);
+    expect(memberMF(20, [0, 7.5, 15], "left")).toBe(0);
+  });
+
+  it("right shoulder rises then is flat", () => {
+    expect(memberMF(20, [20, 30, 60], "right")).toBe(0);
+    expect(memberMF(25, [20, 30, 60], "right")).toBeCloseTo(0.5, 6);
+    expect(memberMF(30, [20, 30, 60], "right")).toBe(1);
+    expect(memberMF(60, [20, 30, 60], "right")).toBe(1);
+  });
+});
+
+describe("termShape + orderedTerms", () => {
+  it("marks the first and last terms as shoulders, inner terms as triangles", () => {
+    expect(termShape(0, 3)).toBe("left");
+    expect(termShape(1, 3)).toBe("triangle");
+    expect(termShape(2, 3)).toBe("right");
+    expect(orderedTerms(floodRisk).map((t) => t.shape)).toEqual([
+      "left",
+      "triangle",
+      "triangle",
+      "right",
+    ]);
+  });
+});
+
+describe("flood-config integrity", () => {
+  it("every triplet is strictly increasing (a < b < c)", () => {
+    for (const variable of [rainfall, riverLevel, floodRisk]) {
+      for (const triplet of Object.values(variable.terms)) {
+        expect(triplet[0]).toBeLessThan(triplet[1]);
+        expect(triplet[1]).toBeLessThan(triplet[2]);
+      }
+    }
+  });
+});
+
 describe("fuzzify", () => {
   it("returns a DOM for every term and clamps out-of-universe input first", () => {
     const degrees = fuzzify(2, rainfall);
     expect(Object.keys(degrees).sort()).toEqual(["Heavy", "Light", "Moderate"]);
-    expect(degrees.Light).toBeCloseTo(0.8667, 4);
+    expect(degrees.Light).toBe(1);
     expect(degrees.Moderate).toBe(0);
     expect(degrees.Heavy).toBe(0);
 
@@ -61,39 +107,51 @@ describe("evaluateRules + termStrengths", () => {
     expect(fired).toHaveLength(9);
 
     const strengths = termStrengths(fired, floodRisk);
-    expect(strengths.High).toBeCloseTo(0.333, 3);
-    expect(strengths.Low).toBe(0);
-    expect(strengths.Moderate).toBe(0);
+    expect(strengths.Forced).toBeCloseTo(1, 6);
+    expect(strengths.Evacuate).toBeCloseTo(0.333, 3);
+    expect(strengths.Normal).toBe(0);
+    expect(strengths.Prepare).toBe(0);
   });
 });
 
 describe("termArea + termCentroid", () => {
-  it("uses a = (highval - lowval) / 2 and the midval as centroid", () => {
-    expect(termCentroid(30, 47.5, 65)).toBe(47.5);
-    expect(termArea(30, 47.5, 65, 0.3055)).toBeCloseTo(9.0596, 3);
-    expect(termArea(60, 75, 100, 0.2945)).toBeCloseTo(10.0449, 3);
-    expect(termArea(0, 0, 50, 0)).toBe(0);
+  it("triangles match the slide formula", () => {
+    expect(termCentroid(30, 47.5, 65, "triangle")).toBe(47.5);
+    expect(termArea(30, 47.5, 65, 0.3055, "triangle")).toBeCloseTo(9.0596, 3);
+    expect(termArea(60, 75, 100, 0.2945, "triangle")).toBeCloseTo(10.0449, 3);
+  });
+
+  it("shoulders use the plateau midpoint and clipped area", () => {
+    expect(termCentroid(0, 12.5, 37.5, "left")).toBe(6.25);
+    expect(termCentroid(62.5, 87.5, 100, "right")).toBe(93.75);
+    expect(termArea(0, 12.5, 37.5, 0, "left")).toBe(0);
+    expect(termArea(0, 12.5, 37.5, 1, "left")).toBeCloseTo(25, 6);
+    expect(termArea(62.5, 87.5, 100, 1, "right")).toBeCloseTo(25, 6);
   });
 });
 
 describe("defuzzify", () => {
   it("returns the area-weighted centroid and guards the empty case", () => {
-    const output: FuzzyVariable = {
-      name: "Classification",
-      universe: { min: 0, max: 100, step: 0.01 },
-      terms: {
-        "Not Infected": [0, 17.5, 35],
-        "Moderately Infected": [30, 47.5, 65],
-        "Highly Infected": [60, 75, 100],
-      },
-    };
-    const strengths = {
-      "Not Infected": 0,
-      "Moderately Infected": 0.3055,
-      "Highly Infected": 0.2945,
-    };
-    expect(defuzzify(strengths, output)).toBeCloseTo(61.9591, 2);
-    expect(defuzzify({ Low: 0, Moderate: 0, High: 0 }, floodRisk)).toBe(0);
+    expect(defuzzify({ Normal: 0, Prepare: 0, Evacuate: 0, Forced: 0 }, floodRisk)).toBe(0);
+    expect(defuzzify({ Normal: 1, Prepare: 0, Evacuate: 0, Forced: 0 }, floodRisk)).toBeCloseTo(6.25, 6);
+    expect(defuzzify({ Normal: 0, Prepare: 1, Evacuate: 0, Forced: 0 }, floodRisk)).toBeCloseTo(37.5, 6);
+    expect(defuzzify({ Normal: 0, Prepare: 0, Evacuate: 0, Forced: 1 }, floodRisk)).toBeCloseTo(93.75, 6);
+  });
+
+  it("reproduces the slide worked example for triangles", () => {
+    const areaModerate = termArea(30, 47.5, 65, 0.3055, "triangle");
+    const areaHigh = termArea(60, 75, 100, 0.2945, "triangle");
+    const centroid = (47.5 * areaModerate + 75 * areaHigh) / (areaModerate + areaHigh);
+    expect(centroid).toBeCloseTo(61.9591, 2);
+  });
+});
+
+describe("classify", () => {
+  it("picks the output term with the highest DOM at the risk value", () => {
+    expect(classify(6.25, floodRisk)).toBe("Normal");
+    expect(classify(30, floodRisk)).toBe("Prepare");
+    expect(classify(70, floodRisk)).toBe("Evacuate");
+    expect(classify(93.75, floodRisk)).toBe("Forced");
   });
 });
 
@@ -120,10 +178,10 @@ describe("aggregate", () => {
 
 describe("inferFloodRisk vectors", () => {
   const cases = [
-    { rain: 2, river: 12.8, risk: 0.0, advisory: "Normal / monitor" },
-    { rain: 22, river: 15, risk: 52.6, advisory: "Evacuate" },
-    { rain: 35, river: 18, risk: 100.0, advisory: "Forced evacuation" },
-    { rain: 60, river: 21.5, risk: 100.0, advisory: "Forced evacuation" },
+    { rain: 2, river: 12.8, risk: 6.25, advisory: "Normal / monitor" },
+    { rain: 22, river: 15, risk: 44.7, advisory: "Prepare" },
+    { rain: 35, river: 18, risk: 82.6, advisory: "Forced evacuation" },
+    { rain: 60, river: 21.5, risk: 93.75, advisory: "Forced evacuation" },
   ];
 
   for (const { rain, river, risk, advisory } of cases) {
@@ -136,13 +194,14 @@ describe("inferFloodRisk vectors", () => {
 
   it("reports fired rules with their strengths", () => {
     const result = inferFloodRisk(22, 15);
-    const moderate = result.firedRules.find((f) => f.rule.consequent.term === "Moderate");
-    const high = result.firedRules.find((f) => f.rule.consequent.term === "High");
-    expect(moderate?.strength).toBeCloseTo(0.667, 3);
-    expect(high?.strength).toBeCloseTo(0.05, 3);
+    const prepare = result.firedRules.find((f) => f.rule.consequent.term === "Prepare");
+    const evacuate = result.firedRules.find((f) => f.rule.consequent.term === "Evacuate");
+    expect(prepare?.strength).toBeCloseTo(0.667, 3);
+    expect(evacuate?.strength).toBeCloseTo(0.2, 3);
 
     const forced = inferFloodRisk(60, 21.5);
     expect(forced.firedRules).toHaveLength(1);
-    expect(forced.firedRules[0].strength).toBeCloseTo(0.917, 3);
+    expect(forced.firedRules[0].rule.consequent.term).toBe("Forced");
+    expect(forced.firedRules[0].strength).toBeCloseTo(1, 3);
   });
 });

@@ -25,9 +25,9 @@ export const rainfall: FuzzyVariable = {
   name: "Rainfall",
   universe: { min: 0, max: 60, step: 0.01 },
   terms: {
-    Light: [0, 0, 15],
+    Light: [0, 7.5, 15],
     Moderate: [7.5, 20, 33],
-    Heavy: [20, 60, 60],
+    Heavy: [20, 30, 60],
   },
 };
 
@@ -35,9 +35,9 @@ export const riverLevel: FuzzyVariable = {
   name: "RiverLevel",
   universe: { min: 10, max: 22, step: 0.01 },
   terms: {
-    Low: [10, 10, 15],
+    Low: [10, 12.8, 15],
     Elevated: [13, 16, 19],
-    Critical: [16, 22, 22],
+    Critical: [16, 18, 22],
   },
 };
 
@@ -45,9 +45,10 @@ export const floodRisk: FuzzyVariable = {
   name: "FloodRisk",
   universe: { min: 0, max: 100, step: 0.01 },
   terms: {
-    Low: [0, 0, 50],
-    Moderate: [0, 50, 100],
-    High: [50, 100, 100],
+    Normal: [0, 12.5, 37.5],
+    Prepare: [12.5, 37.5, 62.5],
+    Evacuate: [37.5, 62.5, 87.5],
+    Forced: [62.5, 87.5, 100],
   },
 };
 
@@ -59,7 +60,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Low" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "Low" },
+    consequent: { variable: "FloodRisk", term: "Normal" },
   },
   {
     id: 2,
@@ -68,7 +69,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Elevated" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "Low" },
+    consequent: { variable: "FloodRisk", term: "Normal" },
   },
   {
     id: 3,
@@ -77,7 +78,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Critical" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "Moderate" },
+    consequent: { variable: "FloodRisk", term: "Prepare" },
   },
   {
     id: 4,
@@ -86,7 +87,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Low" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "Low" },
+    consequent: { variable: "FloodRisk", term: "Normal" },
   },
   {
     id: 5,
@@ -95,7 +96,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Elevated" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "Moderate" },
+    consequent: { variable: "FloodRisk", term: "Prepare" },
   },
   {
     id: 6,
@@ -104,7 +105,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Critical" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "High" },
+    consequent: { variable: "FloodRisk", term: "Evacuate" },
   },
   {
     id: 7,
@@ -113,7 +114,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Low" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "Moderate" },
+    consequent: { variable: "FloodRisk", term: "Prepare" },
   },
   {
     id: 8,
@@ -122,7 +123,7 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Elevated" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "High" },
+    consequent: { variable: "FloodRisk", term: "Evacuate" },
   },
   {
     id: 9,
@@ -131,13 +132,13 @@ export const rules: FuzzyRule[] = [
       { variable: "RiverLevel", term: "Critical" },
     ],
     connective: "AND",
-    consequent: { variable: "FloodRisk", term: "High" },
+    consequent: { variable: "FloodRisk", term: "Forced" },
   },
 ];
 
-export const advisories = [
-  { max: 25, label: "Normal / monitor", color: "Green" },
-  { max: 50, label: "Prepare", color: "Yellow" },
-  { max: 75, label: "Evacuate", color: "Orange" },
-  { max: Infinity, label: "Forced evacuation", color: "Red" },
-] as const;
+export const advisories: Record<string, { label: string; color: string }> = {
+  Normal: { label: "Normal / monitor", color: "Green" },
+  Prepare: { label: "Prepare", color: "Yellow" },
+  Evacuate: { label: "Evacuate", color: "Orange" },
+  Forced: { label: "Forced evacuation", color: "Red" },
+};

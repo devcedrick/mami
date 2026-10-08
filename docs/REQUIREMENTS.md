@@ -18,21 +18,20 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 
 ### FR-2 Fuzzification
 
-- FR-2.1: Engine computes a Degree of Membership (DOM) in `[0,1]` for any `input` against a term `[lowval midval highval]` (`lib/fuzzy.ts` `triangularMF`):
-  - `DOM = 0` if `input < lowval` or `input > highval`
-  - `DOM = 1` if `input == midval`
-  - `DOM = (input − lowval) / (midval − lowval)` if `input < midval`
-  - `DOM = (highval − input) / (highval − midval)` if `input > midval`
+- FR-2.1: Engine computes a Degree of Membership (DOM) in `[0,1]` for any `input` against a term `[lowval midval highval]` whose shape is resolved by position (`lib/fuzzy.ts` `memberMF`). Every triplet satisfies `lowval < midval < highval`:
+  - **first term (left shoulder):** `1` for `input <= midval`; `(highval − input)/(highval − midval)` for `midval < input < highval`; `0` for `input >= highval`.
+  - **last term (right shoulder):** `0` for `input <= lowval`; `(input − lowval)/(midval − lowval)` for `lowval < input < midval`; `1` for `input >= midval`.
+  - **middle term (triangle):** `0` outside `[lowval, highval]`; `1` at `midval`; linear on both slopes.
 
-  The `input == midval` check runs before any division, so edge (right/left-angled) terms never divide by zero.
+  The `input == midval` check runs before any division, so terms never divide by zero (ADR-0003).
 - FR-2.2: Engine fuzzifies both inputs against the terms in `lib/flood-config.ts` (`fuzzify`).
-- FR-2.3: UI shows the membership degree of **every** term for both inputs, including zeros (`components/FuzzificationPanel.tsx`).
+- FR-2.3: On demand, the UI shows the membership degree of **every** term for both inputs, including zeros, via the advanced disclosure (`components/FuzzificationPanel.tsx`, FR-9).
 
 ### FR-3 Rule Evaluation
 
-- FR-3.1: Engine evaluates all 9 rules with `AND = min` (and optional `OR = max`), producing a firing strength per rule (`lib/fuzzy.ts` `evaluateRules`, rules in `lib/flood-config.ts`).
+- FR-3.1: Engine evaluates all 9 rules with `AND = min` (and optional `OR = max`), producing a firing strength per rule. Consequents are the four output terms `Normal/Prepare/Evacuate/Forced` (`lib/fuzzy.ts` `evaluateRules`, rules in `lib/flood-config.ts`).
 - FR-3.2: Engine collapses rules that share an output term to one fired value per term, `μ_i = max` of those rule strengths (`lib/fuzzy.ts` `termStrengths`).
-- FR-3.3: UI lists only rules with strength `> 0`, each with its strength (`components/FiredRulesTable.tsx`).
+- FR-3.3: On demand, the UI lists only rules with strength `> 0`, each with its strength, via the advanced disclosure (`components/FiredRulesTable.tsx`, FR-9).
 
 ### FR-4 Aggregation
 
@@ -40,24 +39,30 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 
 ### FR-5 Defuzzification
 
-- FR-5.1: Engine computes each fired output term's clipped area `Area_i = a_i (2 μ_i − μ_i²)` where `a_i = (highval_i − lowval_i) / 2` (`lib/fuzzy.ts` `termArea`).
-- FR-5.2: Engine uses each output term's `midval_i` as its centroid (`lib/fuzzy.ts` `termCentroid`), and returns the weighted centroid `Centroid_v = Σ(midval_i · Area_i) / Σ(Area_i)`; if `Σ Area_i == 0` it returns `0` (`lib/fuzzy.ts` `defuzzify`).
-- FR-5.3: The area formula applies to edge (right/left-angled) output terms as well — `a_i` uses the full `lowval–highval` base and `Area_i = 0` when `μ_i = 0`.
+- FR-5.1: Engine computes each fired output term's clipped area per its shape (`lib/fuzzy.ts` `termArea`): triangle `a_i(2μ_i − μ_i²)` with `a_i = (highval_i − lowval_i)/2`; left shoulder `μ_i[(highval_i + xμ_i)/2 − lowval_i]` with `xμ_i = highval_i − μ_i(highval_i − midval_i)`; right shoulder `μ_i[highval_i − (xμ_i + lowval_i)/2]` with `xμ_i = lowval_i + μ_i(midval_i − lowval_i)`.
+- FR-5.2: Engine uses each output term's **plateau midpoint** as its centroid (`lib/fuzzy.ts` `termCentroid`): `midval_i` (triangle), `(lowval_i+midval_i)/2` (left shoulder), `(midval_i+highval_i)/2` (right shoulder). It returns `Centroid_v = Σ(Centroid_i · Area_i) / Σ(Area_i)`; if `Σ Area_i == 0` it returns `0` (`defuzzify`).
+- FR-5.3: `Area_i = 0` when `μ_i = 0` for every shape, so unfired terms contribute nothing.
 
 ### FR-6 Result and Advisory
 
 - FR-6.1: UI shows the crisp risk index to one decimal (`components/RiskResult.tsx`).
-- FR-6.2: The advisory **is** the classification: the engine maps `Centroid_v` to `< 25` Normal/monitor (green), `25–50` Prepare (yellow), `50–75` Evacuate (orange), `>= 75` Forced evacuation (red) (`lib/flood-config.ts` `advisories`). There is no separate classification field or second max-DOM pass.
+- FR-6.2: The advisory **is** the output classification (ADR-0004): the engine evaluates the DOM of `Centroid_v` in each of the four output terms and takes the argmax (`lib/fuzzy.ts` `classify`), then reads the label/color from `advisories` — `Normal / monitor` (green), `Prepare` (yellow), `Evacuate` (orange), `Forced evacuation` (red) (`lib/flood-config.ts`).
 - FR-6.3: UI plots the aggregated output with a centroid vertical line using Recharts (`components/AggregatedOutputChart.tsx`).
 
 ### FR-7 Membership-Function Plots
 
-- FR-7.1: UI renders a separate triangular MF plot for each term of every variable (`components/MembershipFunctionsSection.tsx`).
+- FR-7.1: On demand, the UI renders a separate triangular MF plot for each term of every variable, via the advanced disclosure (`components/MembershipFunctionsSection.tsx`, FR-9).
 
 ### FR-8 Mami Mascot
 
 - FR-8.1: Mami's color reflects the current advisory level using the FR-6.2 mapping (`components/Mami.tsx` — not yet created; see [[TASKS]]).
 - FR-8.2: Mami shows an advisory line matching the label (e.g. "Mami says: Evacuate now!") (`components/Mami.tsx`).
+
+### FR-9 Public-First Dashboard
+
+- FR-9.1: The default dashboard shows only the inputs and the risk result; the FIS internals (fuzzification, fired rules, membership functions, aggregated output) are hidden by default (`app/page.tsx`).
+- FR-9.2: A keyboard-accessible disclosure reveals the FIS internals on demand (`app/page.tsx`).
+- FR-9.3: The header shows the app name and a plain-language tagline, not the technical calibration label (`app/page.tsx`).
 
 ## 2. Non-functional Requirements
 
@@ -68,6 +73,7 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 - NFR-5 **Usability:** Two inputs give live, legible feedback (degrees, fired rules, curve, advisory) without a submit step.
 - NFR-6 **Theming:** Advisory colors and surface tokens are defined once in `app/globals.css` and used consistently in light/dark.
 - NFR-7 **Accessibility:** Inputs are labelled, keyboard-focusable range/number controls; advisory is conveyed by text, not color alone.
+- NFR-8 **Progressive disclosure:** The advanced section is a native, focusable disclosure; the app is fully usable without ever opening it.
 
 ## 3. Constraints
 
@@ -80,6 +86,7 @@ Derived from [[PROJECT]]. Stack: Next.js 16 App Router + React 19 + TypeScript 5
 - C-7 **Universes:** rainfall `0–60`, river `10–22`, risk `0–100`; the chart set is sampled at `0.01`. Defuzzification uses the closed-form area/centroid of each output term, not the sampled set.
 - C-8 **Test tolerance:** Expected crisp outputs must match within `±0.1`; when code and spec disagree, fix the code, not the spec.
 - C-9 **Runtime:** Node.js 18+ recommended, Node 22+ for Vitest 5; deploy target Vercel with default Next.js settings.
+- C-10 **Membership triplets:** every term is `[lowval midval highval]` with `lowval < midval < highval` (strict); the first/last term of each variable are shoulders and inner terms are triangles (ADR-0003). The output has four advisory-aligned terms `Normal/Prepare/Evacuate/Forced` (ADR-0004).
 
 ## 4. Out of Scope
 
