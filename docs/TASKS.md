@@ -36,7 +36,7 @@ are owned by [[REQUIREMENTS]]. Each box cites its FR/C and a done-check.
 
 ## Phase 2 — Aggregated output
 
-- [ ] T2.1 `components/AggregatedOutputChart.tsx` — Recharts plot with centroid line (FR-6.3). Done: curve matches `aggregated`; centroid marker at `risk`.
+- [x] T2.1 `components/AggregatedOutputChart.tsx` — Recharts plot with centroid line (FR-6.3). Done: curve matches `aggregated`; centroid marker at `risk`.
 
 ## Phase 3 — Mascot + side effects
 

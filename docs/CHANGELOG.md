@@ -11,6 +11,7 @@ Entries state **what** changed; `[ADR-XXXX]` references carry **why**.
 
 ### Added
 
+- Aggregated output chart (`AggregatedOutputChart`, T2.1/FR-6.3): filled combined-membership area with a vertical Flood Risk Index reference line, downsampled for rendering and wired into the "See how this was decided" disclosure.
 - ADR-0004 ([[0004-four-term-output]]): four advisory-aligned output terms (`Normal/Prepare/Evacuate/Forced`) with output-classification advisory.
 - ADR-0003 ([[0003-shoulder-membership-functions]]): shoulders on extreme terms with strict `a<b<c` triplets and shape-aware defuzzification.
 - ADR-0002 ([[0002-public-first-dashboard]]): public-first dashboard with opt-in decision transparency.

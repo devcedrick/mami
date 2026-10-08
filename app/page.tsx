@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import AggregatedOutputChart from "@/components/AggregatedOutputChart";
 import FiredRulesTable from "@/components/FiredRulesTable";
 import FuzzificationPanel from "@/components/FuzzificationPanel";
 import InputSlider from "@/components/InputSlider";
@@ -68,6 +69,7 @@ export default function Home() {
             riverLevelDegrees={riverLevelDegrees}
           />
           <FiredRulesTable firedRules={result.firedRules} />
+          <AggregatedOutputChart aggregated={result.aggregated} centroid={result.risk} />
           <MembershipFunctionsSection variables={VARIABLES} />
         </div>
       </details>
