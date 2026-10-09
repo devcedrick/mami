@@ -1,6 +1,6 @@
 # Mami — Flood Risk Warning System
 
-> **Mami says:** Keep an eye on the river!
+> **Mami says:** Stay a step ahead of the flood.
 
 **Mami** is a Mamdani-type Fuzzy Inference System (FIS) web app for flood risk warning, calibrated to the **Marikina River (Sto. Niño gauge), Philippines**.  
 The name **Mami** is short for **Mamdani**, and also the name of the app’s cute mascot: a friendly river sprite / water-drop catfish whose color changes with the advisory level.
@@ -19,9 +19,7 @@ The name **Mami** is short for **Mamdani**, and also the name of the app’s cut
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Testing](#testing)
-- [Deployment](#deployment)
-- [Mami the Mascot](#mami-the-mascot)
-- [Deliverables](#deliverables)
+- [License](#license)
 
 ---
 
@@ -32,7 +30,7 @@ Mami accepts two crisp inputs:
 1. **Rainfall Intensity** in mm/hr
 2. **River Level** in meters
 
-It returns a crisp **Flood Risk Index** from `0` to `100`, plus an advisory label:
+It returns a crisp **Flood Risk Index** on a `0`–`100` scale, plus an advisory label:
 
 | Risk Index | Advisory | Mami Color |
 |------------|----------|------------|
@@ -59,11 +57,12 @@ The Marikina River is one of the most flood-prone areas in Metro Manila. The Sto
 ## Features
 
 - Two sliders with numeric inputs for rainfall and river level
-- Fuzzification panel showing membership degree of every term
-- Fired-rules table showing only rules with strength `> 0`
-- Aggregated output plot with centroid line using Recharts
+- Public-first view: inputs and the risk result shown by default
+- Fuzzification panel showing the membership degree of every term (on demand)
+- Fired-rules table showing only rules with strength `> 0` (on demand)
+- Aggregated output chart with a centroid line using Recharts (on demand)
 - Final risk index with advisory label
-- Separate membership-function plots for all variables
+- One membership-function chart per variable, overlaying all of its terms (on demand)
 - Pure, testable fuzzy engine with no external fuzzy library
 
 ---
@@ -74,43 +73,59 @@ The Marikina River is one of the most flood-prone areas in Metro Manila. The Sto
 
 Universe: `0–60 mm/hr`
 
-| Term | Triangular MF `(a, b, c)` |
-|------|----------------------------|
-| Light | `(0, 0, 15)` |
-| Moderate | `(7.5, 20, 33)` |
-| Heavy | `(20, 60, 60)` |
+| Term | Shape | Triplet `[lowval, midval, highval]` |
+|------|-------|-------------------------------------|
+| Light | left shoulder | `[0, 7.5, 15]` |
+| Moderate | triangle | `[7.5, 20, 33]` |
+| Heavy | right shoulder | `[20, 30, 60]` |
 
 ### Input: River Level
 
 Universe: `10–22 m`
 
-| Term | Triangular MF `(a, b, c)` |
-|------|----------------------------|
-| Low | `(10, 10, 15)` |
-| Elevated | `(13, 16, 19)` |
-| Critical | `(16, 22, 22)` |
+| Term | Shape | Triplet `[lowval, midval, highval]` |
+|------|-------|-------------------------------------|
+| Low | left shoulder | `[10, 12.8, 15]` |
+| Elevated | triangle | `[13, 16, 19]` |
+| Critical | right shoulder | `[16, 18, 22]` |
 
 ### Output: Flood Risk Index
 
 Universe: `0–100`
 
-| Term | Triangular MF `(a, b, c)` |
-|------|----------------------------|
-| Low | `(0, 0, 50)` |
-| Moderate | `(0, 50, 100)` |
-| High | `(50, 100, 100)` |
+| Term | Shape | Triplet `[lowval, midval, highval]` |
+|------|-------|-------------------------------------|
+| Normal | left shoulder | `[0, 12.5, 37.5]` |
+| Prepare | triangle | `[12.5, 37.5, 62.5]` |
+| Evacuate | triangle | `[37.5, 62.5, 87.5]` |
+| Forced | right shoulder | `[62.5, 87.5, 100]` |
 
-Degree of Membership (DOM) for a term `[lowval, midval, highval]` (the `(a, b, c)` columns above):
+The four output terms mirror the four advisories; adjacent terms cross at `μ=0.5` exactly at
+the thresholds `25 / 50 / 75`.
+
+Every triplet satisfies `lowval < midval < highval`. Extreme terms are shoulders (flat `MF=1`
+over an interval); middle terms are triangles. Degree of Membership (DOM) for a term
+`[lowval, midval, highval]`:
 
 ```txt
+# first (left shoulder) term
+DOM = 1                                       if input <= midval
+DOM = (highval - input) / (highval - midval)  if midval < input < highval
+DOM = 0                                       if input >= highval
+
+# last (right shoulder) term
+DOM = 0                                       if input <= lowval
+DOM = (input - lowval) / (midval - lowval)    if lowval < input < midval
+DOM = 1                                       if input >= midval
+
+# middle (triangle) term
 DOM = 0                                       if input < lowval or input > highval
 DOM = 1                                       if input == midval
 DOM = (input  - lowval) / (midval - lowval)   if input < midval
 DOM = (highval - input) / (highval - midval)  if input > midval
 ```
 
-Edge terms are right-angled triangles, so the `input == midval` check is handled before any
-division. Inputs are clamped to their universe.
+Inputs are clamped to their universe.
 
 ---
 
@@ -120,21 +135,21 @@ All rules use `AND = min`.
 
 | Rain \ River | Low | Elevated | Critical |
 |--------------|-----|----------|----------|
-| **Light** | Low | Low | Moderate |
-| **Moderate** | Low | Moderate | High |
-| **Heavy** | Moderate | High | High |
+| **Light** | Normal | Normal | Prepare |
+| **Moderate** | Normal | Prepare | Evacuate |
+| **Heavy** | Prepare | Evacuate | Forced |
 
 Written as IF-THEN rules:
 
-1. IF Rainfall is Light AND River is Low THEN Risk is Low
-2. IF Rainfall is Light AND River is Elevated THEN Risk is Low
-3. IF Rainfall is Light AND River is Critical THEN Risk is Moderate
-4. IF Rainfall is Moderate AND River is Low THEN Risk is Low
-5. IF Rainfall is Moderate AND River is Elevated THEN Risk is Moderate
-6. IF Rainfall is Moderate AND River is Critical THEN Risk is High
-7. IF Rainfall is Heavy AND River is Low THEN Risk is Moderate
-8. IF Rainfall is Heavy AND River is Elevated THEN Risk is High
-9. IF Rainfall is Heavy AND River is Critical THEN Risk is High
+1. IF Rainfall is Light AND River is Low THEN Risk is Normal
+2. IF Rainfall is Light AND River is Elevated THEN Risk is Normal
+3. IF Rainfall is Light AND River is Critical THEN Risk is Prepare
+4. IF Rainfall is Moderate AND River is Low THEN Risk is Normal
+5. IF Rainfall is Moderate AND River is Elevated THEN Risk is Prepare
+6. IF Rainfall is Moderate AND River is Critical THEN Risk is Evacuate
+7. IF Rainfall is Heavy AND River is Low THEN Risk is Prepare
+8. IF Rainfall is Heavy AND River is Elevated THEN Risk is Evacuate
+9. IF Rainfall is Heavy AND River is Critical THEN Risk is Forced
 
 The engine can optionally support `OR = max`, but no OR rule is included in the config.
 
@@ -152,22 +167,37 @@ The Mamdani engine in `lib/fuzzy.ts` implements the four stages from the example
    `OR = max`). Rules that share a consequent collapse to one value per output term,
    `μ_i = max` of those rule strengths.
 
-3. **Area of each fired output term** (clip at the fired value):
+3. **Area of each fired output term** (clip at the fired value `μ_i`); the formula depends on the term shape:
 
    ```txt
+   # triangle
    a_i    = (highval_i - lowval_i) / 2
    Area_i = a_i (2 * μ_i - μ_i²)
+
+   # left shoulder   (xμ = highval_i - μ_i * (highval_i - midval_i))
+   Area_i = μ_i * ((highval_i + xμ) / 2 - lowval_i)
+
+   # right shoulder  (xμ = lowval_i + μ_i * (midval_i - lowval_i))
+   Area_i = μ_i * (highval_i - (xμ + lowval_i) / 2)
    ```
 
-4. **Defuzzification** — weighted centroid, using each output term's `midval` as its centroid:
+4. **Defuzzification** — weighted centroid, using each output term's plateau midpoint as its centroid:
 
    ```txt
-   Centroid_i = midval_i
+   Centroid_i = midval_i                         # triangle
+   Centroid_i = (lowval_i + midval_i) / 2        # left shoulder
+   Centroid_i = (midval_i + highval_i) / 2       # right shoulder
    Centroid_v = Σ (Centroid_i * Area_i) / Σ (Area_i)
    ```
 
-   If `Σ Area_i == 0`, return `0`. `Centroid_v` is the Flood Risk Index; the advisory
-   (classification) is looked up from it.
+   If `Σ Area_i == 0`, return `0`. `Centroid_v` is the Flood Risk Index.
+
+5. **Classification (advisory)** — evaluate the Degree of Membership of `Centroid_v` in each
+   output term and take the maximum; that term's label is the advisory:
+
+   ```txt
+   classify(risk) = argmax_t DOM(risk, term_t)
+   ```
 
 The combined output set (`aggregate`, sampled on `0..100` at `0.01` steps) is built for the
 chart only and is **not** used in defuzzification.
@@ -188,7 +218,7 @@ chart only and is **not** used in defuzzification.
 ## Project Structure
 
 ```txt
-flood-risk-fis/
+mami/
 ├─ app/
 │  ├─ globals.css
 │  ├─ layout.tsx
@@ -204,12 +234,15 @@ flood-risk-fis/
 │  ├─ flood-config.ts
 │  ├─ fuzzy.ts
 │  └─ fuzzy.test.ts
-├─ next.config.mjs
-├─ package.json
+├─ docs/
+│  └─ …
+├─ next.config.ts
+├─ eslint.config.mjs
 ├─ postcss.config.mjs
-├─ tailwind.config.ts
+├─ vitest.config.mts
 ├─ tsconfig.json
-└─ vitest.config.ts
+├─ package.json
+└─ README.md
 ```
 
 ---
@@ -260,61 +293,12 @@ Expected crisp outputs within `±0.1` (area-weighted centroid, per Inference Sta
 
 | Rainfall | River Level | Expected Risk | Fired Rules |
 |----------|-------------|---------------|-------------|
-| `2` | `12.8` | `0.0` | Light + Low -> Low `(0.44)` |
-| `22` | `15` | `52.6` | Moderate + Elevated -> Moderate `(0.667)`, Heavy + Elevated -> High `(0.05)` |
-| `35` | `18` | `100.0` | Heavy + Elevated -> High `(0.333)`, Heavy + Critical -> High `(0.333)` |
-| `60` | `21.5` | `100.0` | Heavy + Critical -> High `(0.917)` |
+| `2` | `12.8` | `6.25` | Light + Low -> Normal `(1.0)` |
+| `22` | `15` | `44.7` | Moderate + Elevated -> Prepare `(0.667)`, Heavy + Elevated -> Evacuate `(0.2)` |
+| `35` | `18` | `82.6` | Heavy + Elevated -> Evacuate `(0.333)`, Heavy + Critical -> Forced `(1.0)` |
+| `60` | `21.5` | `93.75` | Heavy + Critical -> Forced `(1.0)` |
 
 If an expected test value does not match the implementation, fix the code, not the spec.
-
----
-
-## Deployment
-
-Deploy on Vercel:
-
-1. Push the project to GitHub.
-2. Import the repository into Vercel.
-3. Keep the default Next.js settings.
-4. Deploy.
-
----
-
-## Mami the Mascot
-
-**Mami** is the app’s friendly guide.
-
-- Name origin: **Mamdani**
-- Form: a cute water-drop / river catfish with whiskers that look like fuzzy membership curves
-- Behavior: Mami’s color follows the advisory level
-  - Green: normal / monitor
-  - Yellow: prepare
-  - Orange: evacuate
-  - Red: forced evacuation
-
-Example Mami lines:
-
-> “Mami says: Keep an eye on the river!”  
-> “Mami says: Prepare — the river is rising.”  
-> “Mami says: Evacuate now!”
-
----
-
-## Deliverables
-
-This repository supports the school activity deliverable:
-
-1. Folder structure
-2. `lib/fuzzy.ts` and `lib/flood-config.ts`
-3. Tests
-4. UI components and page
-5. Run instructions
-
-Final PDF should include:
-
-- Implementation details
-- Walkthrough screenshots
-- Link to the code repository
 
 ---
 

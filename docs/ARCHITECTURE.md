@@ -37,7 +37,7 @@ Rules:
 
 | File | Title | Reads / writes | FR trace |
 | :--- | :---- | :------------- | :------- |
-| `app/page.tsx` | Mami dashboard | reads/writes input state; reads `inferFloodRisk`, config vars; writes all panels | FR-1.1–FR-8.2 |
+| `app/page.tsx` | Mami dashboard | reads/writes input state; reads `inferFloodRisk`, config vars; writes default view + opt-in advanced disclosure | FR-1.1–FR-9.3 |
 | `app/layout.tsx` | Root shell | reads metadata/fonts; writes `<html>/<body>` | — |
 | `app/globals.css` | Theme | Tailwind import + `@theme` tokens | NFR-6 |
 
@@ -53,7 +53,7 @@ array, and `advisories`. No functions.
 
 ```ts
 rainfall: FuzzyVariable; riverLevel: FuzzyVariable; floodRisk: FuzzyVariable;
-rules: FuzzyRule[]; advisories: readonly { max: number; label: string; color: string }[];
+rules: FuzzyRule[]; advisories: Record<string, { label: string; color: string }>;
 ```
 
 ### `lib/fuzzy.ts`
@@ -62,13 +62,17 @@ The pure Mamdani engine and result contract.
 
 ```ts
 clamp(x, universe): number
-triangularMF(x, triplet): number                       // Degree of Membership, 0–1
+termShape(index, count): TermShape
+orderedTerms(variable): TermEntry[]
+memberMF(x, triplet, shape?): number                   // Degree of Membership, 0–1 (ADR-0003)
+triangularMF(x, triplet): number                       // triangle-only DOM
 fuzzify(x, variable): Record<string, number>
 evaluateRules(degrees, ruleSet): FiredRule[]
 termStrengths(fired, output): Record<string, number>   // term -> μ_i = max rule strength
-termArea(lowval, midval, highval, mu): number          // a(2μ − μ²), a=(high−low)/2
-termCentroid(lowval, midval, highval): number          // == midval
+termArea(lowval, midval, highval, mu, shape?): number  // clipped area per shape
+termCentroid(lowval, midval, highval, shape?): number  // plateau midpoint
 defuzzify(strengths, output): number                   // Centroid_v, 0 if ΣArea==0
+classify(risk, output): string                         // argmax DOM output term (advisory)
 aggregate(fired, output): AggregatedPoint[]            // chart only
 inferFloodRisk(rainfallValue, riverLevelValue): FloodRiskResult
 ```
@@ -107,7 +111,7 @@ AggregatedOutputChart(props: { aggregated: AggregatedPoint[]; centroid: number }
 
 ### `components/MembershipFunctionsSection.tsx`
 
-One triangular MF plot per term of each variable. Client component.
+One MF plot per term (left/right shoulder or triangle) for each variable. Client component.
 
 ```ts
 MembershipFunctionsSection(props: { variables: FuzzyVariable[] }): JSX.Element
@@ -151,7 +155,7 @@ Persists: nothing. Each render is derived from current inputs; reload resets to 
 
 ## 5. Cross-cutting concerns
 
-- **Theming:** tokens defined once in `app/globals.css` (`@theme`); advisory colors map 1:1 to `advisories[].color`.
+- **Theming:** tokens defined once in `app/globals.css` (`@theme`); advisory colors map 1:1 to the `advisories` color map.
 - **Wiring-in-sync:** `app/page.tsx` is the single source of truth; every panel is fed from the same `FloodRiskResult` so they cannot drift.
 - **Routing:** single route `/`; sections are in-page anchors, not routes.
 - **Error policy:** degrade, never crash — clamp inputs, guard `Σ Area_i == 0`, keep inputs editable, never emit NaN; no silent drops.
@@ -173,3 +177,4 @@ Persists: nothing. Each render is derived from current inputs; reload resets to 
 | FR-6.3 | `app/page.tsx` | `components/AggregatedOutputChart.tsx` |
 | FR-7.1 | `app/page.tsx` | `components/MembershipFunctionsSection.tsx` |
 | FR-8.1, FR-8.2 | `app/page.tsx` | `components/Mami.tsx` (planned) |
+| FR-9.1–FR-9.3 | `app/page.tsx` | `app/page.tsx` |
