@@ -9,6 +9,8 @@ Entries state **what** changed; `[ADR-XXXX]` references carry **why**.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-09
+
 ### Added
 
 - Aggregated output chart (`AggregatedOutputChart`, T2.1/FR-6.3): filled combined-membership area with a vertical Flood Risk Index reference line, downsampled for rendering and wired into the "See how this was decided" disclosure.
