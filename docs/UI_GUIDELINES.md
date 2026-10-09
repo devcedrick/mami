@@ -14,6 +14,7 @@ data via props (see [[ARCHITECTURE]] §3).
 - Use Tailwind utilities directly (flex/grid, `gap-*`, `p-*`, `rounded-lg`, `border`).
 - Panels are card-like sections (`rounded-lg border p-4`) stacked in one responsive column; wider than `md` may use a two-column grid.
 - Default sections in order: header → inputs → risk result → Mami (Phase 3). Advanced sections live inside the "See how this was decided" disclosure: fuzzification → fired rules → aggregated output → membership functions.
+- A global footer (`components/Footer`, rendered in `app/layout.tsx`) sits below the content on every route: a safety disclaimer plus "Developed by" attribution. It shares the `max-w-3xl` column and uses only theme tokens.
 - Escape-hatch custom CSS only when utilities cannot express it (e.g. a token-driven gradient); keep it in `app/globals.css`.
 
 ## Color and theming
