@@ -17,6 +17,7 @@ Entries state **what** changed; `[ADR-XXXX]` references carry **why**.
 - ADR-0002 ([[0002-public-first-dashboard]]): public-first dashboard with opt-in decision transparency.
 - Implemented the pure Mamdani engine in `lib/fuzzy.ts` (Phase 0, T0.1–T0.6): `clamp`, `triangularMF` (DOM), `fuzzify`, `evaluateRules`, `termStrengths`, `termArea`, `termCentroid`, `defuzzify`, `aggregate`, and `inferFloodRisk`.
 - Added `lib/fuzzy.test.ts` — 13 tests covering the four README vectors, fired-rule strengths, the ADR-0001 slide worked example, and guards.
+- Added a global page footer (`components/Footer`) with a safety disclaimer (not an official warning) and developer attribution.
 
 ### Changed
 
