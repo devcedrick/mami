@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local docs / reference material
+docs/MAMDANI_FLOOD_RISK_SYSTEM.md
+docs/images/
+fuzzy-logic-example.pdf
+
+# local editor / obsidian state
+.vscode/
+docs/.obsidian/graph.json
