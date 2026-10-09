@@ -20,6 +20,7 @@ Entries state **what** changed; `[ADR-XXXX]` references carry **why**.
 - Implemented the pure Mamdani engine in `lib/fuzzy.ts` (Phase 0, T0.1–T0.6): `clamp`, `triangularMF` (DOM), `fuzzify`, `evaluateRules`, `termStrengths`, `termArea`, `termCentroid`, `defuzzify`, `aggregate`, and `inferFloodRisk`.
 - Added `lib/fuzzy.test.ts` — 13 tests covering the four README vectors, fired-rule strengths, the ADR-0001 slide worked example, and guards.
 - Added a global page footer (`components/Footer`) with a safety disclaimer (not an official warning) and developer attribution.
+- Added Open Graph and Twitter Card metadata (`metadataBase`, `openGraph`, `twitter`) with the `public/app-banner.png` banner so shared links render a rich preview on Slack, Discord, Messenger, and X.
 
 ### Changed
 

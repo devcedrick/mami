@@ -13,10 +13,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = new URL(
+  process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "https://mami-ken-cedrick-jimenos-projects.vercel.app"),
+);
+
+const title = "Mami — Flood Risk Warning System";
+const description =
+  "Mamdani fuzzy inference system for flood risk warning, calibrated to the Marikina River (Sto. Niño gauge).";
+const banner = {
+  url: "/app-banner.png",
+  width: 1731,
+  height: 909,
+  alt: "Mami — Flood Risk Warning System",
+};
+
 export const metadata: Metadata = {
-  title: "Mami — Flood Risk Warning System",
-  description:
-    "Mamdani fuzzy inference system for flood risk warning, calibrated to the Marikina River (Sto. Niño gauge).",
+  metadataBase: siteUrl,
+  title,
+  description,
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Mami",
+    title,
+    description,
+    images: [banner],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: [banner.url],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
